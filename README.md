@@ -1,4 +1,4 @@
-# RAF-2025/26. Programiranje sistema - Materijali sa vežbi
+# RAF-2025/26. Programiranje sistema - Materijali
 
 Ovaj repozitorijum sadrži praktične primere, konfiguracije i kod sa vežbi iz predmeta Programiranje sistema.
 
@@ -18,7 +18,7 @@ Ovaj repozitorijum sadrži praktične primere, konfiguracije i kod sa vežbi iz 
 
 ---
 
-## 📅 2. nedelja: DTO obrazac, API Contract i validacija
+## 2. nedelja: DTO obrazac, API Contract i validacija
 
 ### Obrađeno:
 * **Data Transfer Object (DTO) Pattern:**

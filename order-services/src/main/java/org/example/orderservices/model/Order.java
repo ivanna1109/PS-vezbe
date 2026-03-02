@@ -13,9 +13,14 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long restaurantId; // Referenca na ID iz prvog servisa
+    private Long restaurantId;
     private String customerName;
+
     private Double totalAmount;
+
+    private String status;
+
+    private java.time.LocalDateTime createdAt;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")

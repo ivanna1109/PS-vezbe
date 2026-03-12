@@ -25,7 +25,8 @@ public class OrderControllerV2 {
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> create(@RequestBody OrderCreateDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(dto));
+        //return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrderV3(dto));
     }
 
     @DeleteMapping("/{id}")

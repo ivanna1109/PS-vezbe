@@ -5,9 +5,12 @@ import org.example.restaurantservice.dto.ItemDTO;
 import org.example.restaurantservice.dto.RestaurantDTO;
 import org.example.restaurantservice.model.Restaurant;
 import org.example.restaurantservice.repository.RestaurantRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,5 +50,13 @@ public class RestaurantService {
         existing.setAddress(dto.getAddress());
 
         return convertToDTO(restaurantRepository.save(existing));
+    }
+
+    //V3
+
+    public RestaurantDTO getById(Long id) {
+        return restaurantRepository.findById(id)
+                .map(this::convertToDTO)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restoran ne postoji"));
     }
 }

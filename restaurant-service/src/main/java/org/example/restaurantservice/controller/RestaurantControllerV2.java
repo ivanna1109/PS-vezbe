@@ -36,4 +36,12 @@ public class RestaurantControllerV2 {
     public ResponseEntity<RestaurantDTO> update(@PathVariable Long id, @Valid @RequestBody RestaurantDTO dto) {
         return ResponseEntity.ok(restaurantService.update(id, dto));
     }
+
+    // V3
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RestaurantDTO> getById(@PathVariable Long id) {
+        // Ova metoda mora postojati u tvom RestaurantService-u
+        return ResponseEntity.ok(restaurantService.getById(id));
+    }
 }

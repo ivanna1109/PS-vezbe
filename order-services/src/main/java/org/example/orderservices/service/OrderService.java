@@ -1,17 +1,21 @@
 package org.example.orderservices.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.example.orderservices.client.RestaurantClient;
-import org.example.orderservices.dto.OrderCreateDTO;
-import org.example.orderservices.dto.OrderResponseDTO;
-import org.example.orderservices.dto.RestaurantDTO;
+import org.example.orderservices.dto.*;
 import org.example.orderservices.model.Order;
+import org.example.orderservices.model.OrderItem;
 import org.example.orderservices.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -106,5 +110,82 @@ public class OrderService {
 
         Order saved = orderRepository.save(order);
         return convertToResponseDTO(saved);
+    }
+
+    //v4
+
+    @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrder")
+    @Transactional
+    public OrderResponseDTO createOrderV4(OrderCreateDTO request) {
+        RestaurantDTO restaurant = restaurantClient.getRestaurantById(request.getRestaurantId());
+
+        for (OrderItemRequestDTO requestedItem : request.getItems()) {
+            // Pronaći jelo u meniju restorana
+            ItemDTO actualItem = restaurant.getMenuItems().stream()
+                    .filter(i -> i.getId().equals(requestedItem.getItemId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Jelo ne postoji!"));
+
+            // Poredi se cena iz zahteva i cena iz restorana
+            if (!actualItem.getPrice().equals(requestedItem.getPriceAtBooking())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Cena za jelo se promenila! Trenutna cena je: " + actualItem.getPrice());
+            }
+        }
+        return createOrderInDatabaseV4(request, restaurant);
+    }
+
+    public OrderResponseDTO createOrderInDatabaseV4(OrderCreateDTO dto, RestaurantDTO rdto) {
+        Order order = new Order();
+        order.setRestaurantId(rdto.getId());
+        order.setStatus("PENDING");
+        order.setCustomerName("Test test"); //hardkodovano
+        order.setCreatedAt(LocalDateTime.now());
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        double totalAmount = 0;
+
+        // Za svaku stavku iz zahteva (DTO) praviti model OrderItem
+        for (OrderItemRequestDTO itemRequest : dto.getItems()) {
+
+            // Tražiti jelo u meniju koji nam je stigao iz Restoran servisa
+            ItemDTO menuItem = rdto.getMenuItems().stream()
+                    .filter(m -> m.getId().equals(itemRequest.getItemId())).findFirst().get();
+
+            // Kreirati entitet OrderItem za bazu
+            OrderItem orderItem = new OrderItem();
+            orderItem.setMenuItemId(menuItem.getId());
+            orderItem.setQuantity(itemRequest.getQuantity());
+            orderItem.setPrice(menuItem.getPrice()); // Uzimamo PRAVU cenu iz restorana, ne fiktivnu!
+
+            totalAmount += orderItem.getPrice() * orderItem.getQuantity();
+            orderItems.add(orderItem);
+        }
+
+        order.setItems(orderItems);
+        order.setTotalAmount(totalAmount);
+
+        Order saved = orderRepository.save(order);
+        return convertToResponseDTO(saved);
+    }
+
+    public OrderResponseDTO fallbackCreateOrder(OrderCreateDTO dto, Throwable t) {
+        if (t instanceof feign.FeignException.NotFound) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Restoran sa ID-jem " + dto.getRestaurantId() + " nije pronađen."
+            );
+        }
+
+        // Problem sa cenom ili loš zahtev (400 ili 409)
+        if (t instanceof ResponseStatusException) {
+            throw (ResponseStatusException) t;
+        }
+
+        // Pravi pad sistema (Connection Refused, Timeout, ili je CB već OPEN)
+        // Kada stvarno možemo reći da servis nije dostupan
+        throw new ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Sistem za restorane je trenutno nedostupan ili preopterećen."
+        );
     }
 }

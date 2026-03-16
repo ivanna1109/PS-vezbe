@@ -41,7 +41,7 @@ public class RestaurantControllerV2 {
 
     @GetMapping("/{id}")
     public ResponseEntity<RestaurantDTO> getById(@PathVariable Long id) {
-        // Ova metoda mora postojati u tvom RestaurantService-u
+        // Ova metoda mora postojati u RestaurantService-u
         return ResponseEntity.ok(restaurantService.getById(id));
     }
 }

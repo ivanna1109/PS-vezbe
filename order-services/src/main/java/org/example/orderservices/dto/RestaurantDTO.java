@@ -5,11 +5,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RestaurantDTO {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+
+    private List<ItemDTO> menuItems;
 
     /*
     @NotBlank(message = "Naziv restorana je obavezan")

@@ -56,7 +56,35 @@ public class RestaurantService {
 
     public RestaurantDTO getById(Long id) {
         return restaurantRepository.findById(id)
-                .map(this::convertToDTO)
+                //.map(this::convertToDTO) //v3
+                .map(this::convertToDTOWithMenuItems)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restoran ne postoji"));
+    }
+
+    //V4 - dodavanje i liste jela u DTO kao odgovor
+
+    private RestaurantDTO convertToDTOWithMenuItems(Restaurant res) {
+        RestaurantDTO dto = new RestaurantDTO();
+        dto.setId(res.getId());
+        dto.setName(res.getName());
+        dto.setAddress(res.getAddress());
+
+        // Proveravamo da li restoran ima stavke u meniju
+        if (res.getMenuItems() != null) {
+            List<ItemDTO> itemDTOs = res.getMenuItems().stream()
+                    .map(item -> {
+                        ItemDTO itemDto = new ItemDTO();
+                        itemDto.setId(item.getId());
+                        itemDto.setName(item.getName());
+                        itemDto.setPrice(item.getPrice());
+                        itemDto.setDescription(item.getDescription());
+                        return itemDto;
+                    })
+                    .collect(Collectors.toList());
+
+            dto.setMenuItems(itemDTOs);
+        }
+
+        return dto;
     }
 }

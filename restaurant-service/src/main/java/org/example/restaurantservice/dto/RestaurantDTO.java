@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class RestaurantDTO {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
@@ -17,5 +20,6 @@ public class RestaurantDTO {
     @Schema(example = "Dunavska 16")
     private String address;
 
-    //private List<ItemDTO> menuItems = new ArrayList<>(); - lista nam
+    //v4 - potrebno dodati!
+    private List<ItemDTO> menuItems = new ArrayList<>();
 }

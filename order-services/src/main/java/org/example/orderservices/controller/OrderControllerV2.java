@@ -35,4 +35,10 @@ public class OrderControllerV2 {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build(); // Vraća status 204 - adekvatno za brisanje bez propratne poruke
     }
+
+    //v4
+    @PostMapping("/newOrderV4")
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderCreateDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrderV4(dto));
+    }
 }

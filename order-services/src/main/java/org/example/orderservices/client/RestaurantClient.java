@@ -1,5 +1,6 @@
 package org.example.orderservices.client;
 
+import org.example.orderservices.dto.ItemDTO;
 import org.example.orderservices.dto.RestaurantDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,4 +12,9 @@ public interface RestaurantClient {
 
     @GetMapping("/{id}")
     RestaurantDTO getRestaurantById(@PathVariable("id") Long id);
+
+    //v4
+    //sporiji način - svaki item se posebno dobavlja iz restoran servisa
+    @GetMapping("/{restaurantId}/items/{itemId}")
+    ItemDTO getItemFromRestaurant(@PathVariable Long restaurantId, @PathVariable Long itemId);
 }

@@ -36,6 +36,37 @@ Ovaj repozitorijum sadrži praktične primere, konfiguracije i kod sa vežbi iz 
 
 ---
 
+## 3. nedelja: Sinhrona komunikacija (OpenFeign)
+
+### Obrađeno:
+* **Spring Cloud OpenFeign:**
+    * Dodavanje zavisnosti i aktivacija putem `@EnableFeignClients`.
+    * Kreiranje deklarativnih HTTP klijenata pomoću `@FeignClient` interfejsa.
+* **Inter-service komunikacija:**
+    * Realizacija scenarija gde *Order* servis povlači podatke o restoranu iz *Restaurant* servisa u realnom vremenu.
+    * Razmena podataka isključivo putem DTO objekata.
+* **Lanci poziva:**
+    * Testiranje putanje: **Korisnik -> Order Service -> Feign -> Restaurant Service**.
+* **Analiza grešaka:** Razmatranje ponašanja sistema kada udaljeni servis vrati `404` ili `500` statusni kod.
+
+---
+
+## 4. nedelja: Otpornost sistema (Circuit Breaker)
+
+### Obrađeno:
+* **Resilience4j Integracija:**
+    * Konfiguracija "Osigurača" (*Circuit Breaker*) radi zaštite sistema od kaskadnih otkaza.
+* **Parametri otpornosti (application.properties):**
+    * `slidingWindowSize`: broj poziva koji se prate 
+    * `failureRateThreshold`: procenat grešaka za otvaranje osigurača
+    * `waitDurationInOpenState`: period čekanja pre pokušaja oporavka
+* **Mehanizam "Plan B" (Fallback):**
+    * Implementacija `fallback` metoda koje vraćaju defaultne vrednosti kada je servis nedostupan.
+* **Simulacija kvara:**
+    * Gašenje servisa i praćenje promene stanja osigurača (`CLOSED -> OPEN -> HALF_OPEN`) kroz logove.
+
+---
+
 ## 🛠️ Tehnologije
 * **Java 21+**
 * **Spring Boot 3.x**

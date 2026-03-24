@@ -4,11 +4,12 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.example.orderservices.client.RestaurantClient;
 import org.example.orderservices.dto.*;
+import org.example.orderservices.exceptions.OrderProcessingException;
+import org.example.orderservices.exceptions.RestaurantNotFoundException;
 import org.example.orderservices.model.Order;
 import org.example.orderservices.model.OrderItem;
 import org.example.orderservices.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -186,6 +187,63 @@ public class OrderService {
         throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "Sistem za restorane je trenutno nedostupan ili preopterećen."
+        );
+    }
+
+    //v5
+    @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV5")
+    @Transactional
+    public OrderResponseDTO createOrderV5(OrderCreateDTO request) {
+        RestaurantDTO restaurant = restaurantClient.getRestaurantById(request.getRestaurantId());
+
+        for (OrderItemRequestDTO requestedItem : request.getItems()) {
+            ItemDTO actualItem = restaurant.getMenuItems().stream()
+                    .filter(i -> i.getId().equals(requestedItem.getItemId()))
+                    .findFirst()
+                    .orElseThrow(() -> new OrderProcessingException("Jelo ne postoji u meniju!", HttpStatus.NOT_FOUND));
+
+            if (!actualItem.getPrice().equals(requestedItem.getPriceAtBooking())) {
+                // Umesto ResponseStatusException, bacamo custom izuzetak
+                throw new OrderProcessingException("Cena se promenila! Trenutna: " + actualItem.getPrice(), HttpStatus.CONFLICT);
+            }
+        }
+
+        if (request.getRestaurantId() == 99) {
+            throw new OrderProcessingException("Korisnik nema dovoljno sredstava (Simulacija 402)", HttpStatus.PAYMENT_REQUIRED);
+        }
+
+        return createOrderInDatabaseV4(request, restaurant);
+    }
+
+    // fallback method v5
+    public OrderResponseDTO fallbackCreateOrderV5(OrderCreateDTO dto, Throwable t) {
+        if (t instanceof OrderProcessingException) {
+            throw (OrderProcessingException) t;
+        }
+
+        if (t instanceof feign.FeignException.NotFound) {
+            throw new OrderProcessingException("Restoran nije pronađen preko Feign-a", HttpStatus.NOT_FOUND);
+        }
+
+        throw new OrderProcessingException("Sistem restorana je nedostupan (Circuit Breaker)", HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    //metod za test u Half-open stanju:
+    @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackSafe")
+    public RestaurantDTO getRestaurantSafe(Long id) {
+        return restaurantClient.getRestaurantById(id);
+    }
+
+    // Fallback koji se aktivira kada CB detektuje problem (Open stanje)
+    public RestaurantDTO fallbackSafe(Long id, Throwable t) {
+        // Log greške
+        System.out.println("Circuit Breaker aktiviran zbog: " + t.getMessage());
+
+        if (t instanceof feign.FeignException.NotFound)
+            throw new RestaurantNotFoundException("Restoran nije pronadjen!", HttpStatus.NOT_FOUND);
+        throw new OrderProcessingException(
+                "Restoran servis je trenutno nedostupan. Molimo pokušajte kasnije.",
+                HttpStatus.SERVICE_UNAVAILABLE
         );
     }
 }

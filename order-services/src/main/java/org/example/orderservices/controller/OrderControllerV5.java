@@ -1,9 +1,9 @@
 package org.example.orderservices.controller;
-
-
 import lombok.RequiredArgsConstructor;
 import org.example.orderservices.dto.*;
 import org.example.orderservices.service.OrderService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +12,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v5/orders")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:8080")
+@RefreshScope
 public class OrderControllerV5 {
+
+    //v6
+    @Value("${custom.welcome-message}")
+    private String message;
+
+    @GetMapping("/api/v5/orders/welcome")
+    public String getMessage() { return message; }
+
+    //*****************************************************************************
 
     private final OrderService orderService;
 

@@ -15,29 +15,45 @@ public class GlobalApiFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 1. SECURITY: Provera API ključa
+        String path = exchange.getRequest().getURI().getPath();
+
+        if (path.contains("/v3/api-docs") || path.contains("/swagger-ui") || path.contains("/webjars")) {
+            return chain.filter(exchange);
+        }
+
+        // 2. SECURITY (PRE-FILTER): Provera API ključa
         String apiKey = exchange.getRequest().getHeaders().getFirst("X-API-KEY");
         if (apiKey == null || !apiKey.equals("studentska-tajna-2026")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        // 2. TRACING: Generisanje Trace ID-a
+        if (path.contains("/restaurants")) {
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN); // 403
+            return exchange.getResponse().setComplete();
+        }
+
+        // TRACING: Generisanje Trace ID-a (Ručno, uz Micrometer koji radi automatski)
         String traceId = UUID.randomUUID().toString();
 
-        // Mutiramo request da prosledimo Trace ID mikroservisima
+        // Mutiramo request da prosledimo Trace ID mikroservisima kroz zaglavlje
         ServerWebExchange mutatedExchange = exchange.mutate()
                 .request(builder -> builder.header("X-Trace-Id", traceId))
                 .build();
 
-        System.out.println("[GATEWAY] Dolazni zahtev na: " + exchange.getRequest().getPath() + " | TraceID: " + traceId);
+        System.out.println("[GATEWAY PRE] Putanja: " + path + " | TraceID: " + traceId);
 
+        // 4. POST-FILTER: Izvršava se pomoću .then() nakon što mikroservis odgovori
         return chain.filter(mutatedExchange).then(Mono.fromRunnable(() -> {
-            // POST-FILTER LOGIKA: Logujemo status odgovor
-            System.out.println("[GATEWAY] Odgovor poslat sa statusom: " + exchange.getResponse().getStatusCode());
+            System.out.println("[GATEWAY POST] Odgovor za: " + path +
+                    " | Status: " + exchange.getResponse().getStatusCode() +
+                    " | TraceID: " + traceId);
         }));
     }
 
     @Override
-    public int getOrder() { return -1; }
+    public int getOrder() {
+        // Postavljamo visok prioritet da bi ovo bio prvi filter u lancu
+        return -1;
+    }
 }

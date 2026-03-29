@@ -1,6 +1,7 @@
 package org.example.orderservices.service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import org.example.orderservices.client.RestaurantClient;
 import org.example.orderservices.dto.*;
@@ -191,7 +192,9 @@ public class OrderService {
     }
 
     //v5
-    @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV5")
+    @RateLimiter(name = "restaurantServiceRateLimiter", fallbackMethod = "fallbackRateLimit")
+    //@CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV5")
+    @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV6")
     @Transactional
     public OrderResponseDTO createOrderV5(OrderCreateDTO request) {
         RestaurantDTO restaurant = restaurantClient.getRestaurantById(request.getRestaurantId());
@@ -226,6 +229,26 @@ public class OrderService {
         }
 
         throw new OrderProcessingException("Sistem restorana je nedostupan (Circuit Breaker)", HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    public OrderResponseDTO fallbackRateLimit(OrderCreateDTO dto, Throwable t) {
+        throw new OrderProcessingException("Previše zahteva! (Rate Limit).", HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    public OrderResponseDTO fallbackCreateOrderV6(OrderCreateDTO dto, Throwable t) {
+        Throwable actualCause = (t instanceof java.lang.reflect.UndeclaredThrowableException)
+                ? t.getCause() : t;
+
+        if (actualCause instanceof OrderProcessingException) {
+            throw (OrderProcessingException) actualCause;
+        }
+
+        if (actualCause.getClass().getSimpleName().equals("CallNotPermittedException")) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Circuit Breaker je otvoren!");
+        }
+
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Greška: " + actualCause.getMessage());
     }
 
     //metod za test u Half-open stanju:

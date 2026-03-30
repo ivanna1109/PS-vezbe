@@ -192,7 +192,7 @@ public class OrderService {
     }
 
     //v5
-    @RateLimiter(name = "restaurantServiceRateLimiter", fallbackMethod = "fallbackRateLimit")
+    //@RateLimiter(name = "restaurantServiceRateLimiter", fallbackMethod = "fallbackRateLimit")
     //@CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV5")
     @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV6")
     @Transactional

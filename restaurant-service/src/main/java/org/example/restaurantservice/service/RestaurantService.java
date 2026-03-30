@@ -61,7 +61,7 @@ public class RestaurantService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Restoran ne postoji"));
     }
 
-    //V4 - dodavanje i liste jela u DTO kao odgovor
+    //V4, V5, V6 - dodavanje i liste jela u DTO kao odgovor
 
     private RestaurantDTO convertToDTOWithMenuItems(Restaurant res) {
         RestaurantDTO dto = new RestaurantDTO();

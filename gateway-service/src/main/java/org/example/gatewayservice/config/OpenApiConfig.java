@@ -7,6 +7,8 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+//TIP: pomocna template klasa za uvodjenje mogucnosti
+// slanja Header-a u Swagger zahtevu
 @Configuration
 public class OpenApiConfig {
     @Bean

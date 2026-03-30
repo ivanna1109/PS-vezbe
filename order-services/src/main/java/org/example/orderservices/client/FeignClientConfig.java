@@ -5,6 +5,7 @@ import org.example.orderservices.exceptions.FeignErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+//potrebno je registrovati FeignErrorDecoder
 @Configuration
 public class FeignClientConfig {
     @Bean

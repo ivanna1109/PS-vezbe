@@ -4,6 +4,7 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.stereotype.Component;
 
+//Presretac zahteva koji se salju Feign kanalom
 @Component
 public class FeignClientInterceptor implements RequestInterceptor {
 

@@ -51,9 +51,15 @@ public class GlobalApiFilter implements GlobalFilter, Ordered {
         }));
     }
 
+    /*
+    Sigurnosni filteri i filteri za praćenje
+    uvek moraju imati najveći prioritet (najmanji order),
+    kako bismo loše zahteve odbacili na samom ulazu,
+    pre nego što sistem potroši resurse na njihovu dalju obradu
+    */
     @Override
     public int getOrder() {
-        // Postavljamo visok prioritet da bi ovo bio prvi filter u lancu
+        //Visok prioritet da bi ovo bio prvi filter u lancu
         return -1;
     }
 }

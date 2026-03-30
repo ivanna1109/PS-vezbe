@@ -5,6 +5,8 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+//Mozemo umesto GlobalFiltera imati i Custom definisane
+// Pre- i post-filtere
 @Component
 public class LoggingPostFilter extends AbstractGatewayFilterFactory<LoggingPostFilter.Config> {
 

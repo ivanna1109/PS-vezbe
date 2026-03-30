@@ -192,9 +192,9 @@ public class OrderService {
     }
 
     //v5
-    //@RateLimiter(name = "restaurantServiceRateLimiter", fallbackMethod = "fallbackRateLimit")
     //@CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV5")
     @CircuitBreaker(name = "restaurantServiceCB", fallbackMethod = "fallbackCreateOrderV6")
+    //@RateLimiter(name = "restaurantServiceRateLimiter", fallbackMethod = "fallbackRateLimit")
     @Transactional
     public OrderResponseDTO createOrderV5(OrderCreateDTO request) {
         RestaurantDTO restaurant = restaurantClient.getRestaurantById(request.getRestaurantId());
@@ -231,6 +231,7 @@ public class OrderService {
         throw new OrderProcessingException("Sistem restorana je nedostupan (Circuit Breaker)", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    //fallback za rate limit (konfiguracija u .properties fajlu)
     public OrderResponseDTO fallbackRateLimit(OrderCreateDTO dto, Throwable t) {
         throw new OrderProcessingException("Previše zahteva! (Rate Limit).", HttpStatus.TOO_MANY_REQUESTS);
     }

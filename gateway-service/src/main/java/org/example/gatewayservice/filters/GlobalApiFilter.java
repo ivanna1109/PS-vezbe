@@ -28,10 +28,10 @@ public class GlobalApiFilter implements GlobalFilter, Ordered {
             return exchange.getResponse().setComplete();
         }
 
-        if (path.contains("/restaurants")) {
-            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN); // 403
-            return exchange.getResponse().setComplete();
-        }
+        //if (path.contains("/restaurants")) {
+        //    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN); // 403
+        //    return exchange.getResponse().setComplete();
+        //}
 
         // TRACING: Generisanje Trace ID-a (Ručno, uz Micrometer koji radi automatski)
         String traceId = UUID.randomUUID().toString();

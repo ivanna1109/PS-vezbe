@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v5/orders")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:8080")
+//@CrossOrigin(origins = "http://localhost:8080")
 @RefreshScope
 public class OrderControllerV5 {
 

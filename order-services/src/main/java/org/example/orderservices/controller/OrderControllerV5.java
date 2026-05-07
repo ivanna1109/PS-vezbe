@@ -1,7 +1,10 @@
 package org.example.orderservices.controller;
 import lombok.RequiredArgsConstructor;
+import org.example.orderservices.configs.RabbitMQConfig;
 import org.example.orderservices.dto.*;
 import org.example.orderservices.service.OrderService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
@@ -46,5 +49,16 @@ public class OrderControllerV5 {
     public ResponseEntity<RestaurantDTO> testCB(@PathVariable Long restaurantId) {
         RestaurantDTO restaurant = orderService.getRestaurantSafe(restaurantId);
         return ResponseEntity.ok(restaurant);
+    }
+
+    //vezbe 9
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @GetMapping("/test-rabbit")
+    public String send() {
+        String poruka = "Pozdrav sa RabbitMQ-a!";
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, poruka);
+        return "Poruka poslata!";
     }
 }

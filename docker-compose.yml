@@ -97,6 +97,16 @@ services:
       - "8085:8080"
     networks:
       - micro-network
+ 
+  #7. RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # Port za komunikaciju (AMQP)
+      - "15672:15672" # Port za Management Web Konzolu
+    networks:
+      - micro-network
 
 networks:
   micro-network:

@@ -2,11 +2,14 @@ package org.example.orderservices.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.orderservices.configs.RabbitMQConfig;
 import org.example.orderservices.dto.*;
+import org.example.dtos.OrderEventDTO;
+import org.example.orderservices.service.OrderProducer;
 import org.example.orderservices.service.OrderService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.data.domain.jaxb.SpringDataJaxb;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,5 +63,20 @@ public class OrderControllerV5 {
         String poruka = "Pozdrav sa RabbitMQ-a!";
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, poruka);
         return "Poruka poslata!";
+    }
+
+
+    //vezbe 10
+
+    private final OrderProducer orderProducer;
+    @PostMapping("/rabbitMQ/createOrder")
+    public ResponseEntity<OrderEventDTO> createOrderV5(@RequestBody OrderEventDTO request) {
+        request = orderProducer.placeOrder(request);
+        return new ResponseEntity<>(request, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/rabbitMQ/getOrder/{id}")
+    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.getOrderById(id));
     }
 }

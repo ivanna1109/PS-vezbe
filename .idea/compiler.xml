@@ -7,9 +7,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="order-services" />
+        <module name="shared-module" />
         <module name="restaurant-service" />
         <module name="config-service" />
+        <module name="order-services" />
       </profile>
       <profile name="Annotation profile for gateway-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />

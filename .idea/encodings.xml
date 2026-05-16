@@ -6,5 +6,7 @@
     <file url="file://$PROJECT_DIR$/order-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/order-services/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/restaurant-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared-module/src/main/resources" charset="UTF-8" />
   </component>
 </project>

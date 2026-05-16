@@ -1,14 +1,12 @@
 version: '3.8'
 
 services:
-  # 1. CONFIG SERVIS - Centralna konfiguracija
   config-service:
     build: ./config-service
     container_name: config-cont
     ports:
       - "8888:8888"
     healthcheck:
-      # Da li je config server podignut (odgovara na /health ili samo port)
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 10s
       timeout: 5s
@@ -16,7 +14,6 @@ services:
     networks:
       - micro-network
 
-  # 2. BAZA PODATAKA: MySQL
   db-mysql:
     image: mysql:8.0
     container_name: mysql-db
@@ -35,7 +32,6 @@ services:
     networks:
       - micro-network
 
-  # 3. GATEWAY SERVIS
   gateway-service:
     build: ./gateway-service
     container_name: gateway-cont
@@ -51,7 +47,6 @@ services:
     networks:
       - micro-network
 
-  # 4. RESTAURANT SERVIS
   restaurant-service:
     build: ./restaurant-service
     container_name: restaurant-cont
@@ -67,10 +62,11 @@ services:
         condition: service_healthy
       config-service:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - micro-network
 
-  # 5. ORDER SERVIS
   order-service:
     build: ./order-services
     container_name: order-cont
@@ -86,10 +82,11 @@ services:
         condition: service_healthy
       config-service:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - micro-network
 
-  # 6. ADMINER
   adminer:
     image: adminer
     container_name: adminer-cont
@@ -97,14 +94,18 @@ services:
       - "8085:8080"
     networks:
       - micro-network
- 
-  #7. RabbitMQ
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
-      - "5672:5672"   # Port za komunikaciju (AMQP)
-      - "15672:15672" # Port za Management Web Konzolu
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - micro-network
 

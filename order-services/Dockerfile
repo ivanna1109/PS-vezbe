@@ -22,8 +22,8 @@ FROM container-registry.oracle.com/java/openjdk:24-oraclelinux9
 WORKDIR /app
 
 # Kopiramo samo gotov .jar iz prve faze
-COPY --from=build /app/target/*.jar app.jar
-
+#COPY --from=build /app/target/*.jar app.jar
+COPY target/*.jar app.jar
 # Eksternalizacija porta (Faktor III - Config)
 ENV SERVER_PORT=8081
 

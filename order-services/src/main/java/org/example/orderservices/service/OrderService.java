@@ -3,6 +3,7 @@ package org.example.orderservices.service;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
+import org.example.dtos.OrderEventDTO;
 import org.example.orderservices.client.RestaurantClient;
 import org.example.orderservices.dto.*;
 import org.example.orderservices.exceptions.OrderProcessingException;
@@ -19,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -269,5 +271,25 @@ public class OrderService {
                 "Restoran servis je trenutno nedostupan. Molimo pokušajte kasnije.",
                 HttpStatus.SERVICE_UNAVAILABLE
         );
+    }
+
+    //vezbe 10
+
+    public OrderResponseDTO getOrderById(Long id){
+        Optional<Order> o = orderRepository.findById(id);
+        if (o.isEmpty())
+            return null;
+        OrderResponseDTO foundOrder = new OrderResponseDTO();
+        foundOrder.setId(o.get().getId());
+        foundOrder.setStatus(o.get().getStatus());
+        foundOrder.setTotalAmount(o.get().getTotalAmount());
+        return foundOrder;
+    }
+
+    public void updateEvent(OrderEventDTO finalEvent){
+        orderRepository.findById(finalEvent.getOrderId()-1).ifPresent(order -> {
+            order.setStatus(finalEvent.getStatus());
+            orderRepository.save(order);
+        });
     }
 }

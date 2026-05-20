@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 // name je proizvoljno, url mora biti tačan port Restaurant servisa
-@FeignClient(name = "restaurant-client", url = "http://localhost:8080/api/v2/restaurants")
+@FeignClient(name = "restaurant-client", url = "http://restaurant-cont:8082/api/v2/restaurants")
 public interface RestaurantClient {
 
     @GetMapping("/{id}")

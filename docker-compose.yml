@@ -44,12 +44,16 @@ services:
     depends_on:
       config-service:
         condition: service_healthy
+      loki:                  
+        condition: service_started
     networks:
       - micro-network
 
   restaurant-service:
     build: ./restaurant-service
     container_name: restaurant-cont
+    ports:
+      - "8082:8082"
     environment:
       - CONFIG_SERVER_URL=http://config-service:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/restaurant_order_db?createDatabaseIfNotExist=true
@@ -64,14 +68,20 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      loki:                  
+        condition: service_started
     networks:
       - micro-network
 
   order-service:
     build: ./order-services
     container_name: order-cont
+    ports:
+      - "8081:8081"
     environment:
       - CONFIG_SERVER_URL=http://config-service:8888
+      #- "loki.url=http://loki:3100/loki/api/v1/push"
+      #- "logging.config=classpath:logback-spring.xml"
       - SPRING_DATASOURCE_URL=jdbc:mysql://db-mysql:3306/restaurant_order_db?createDatabaseIfNotExist=true
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -84,6 +94,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      loki:                  
+        condition: service_started
     networks:
       - micro-network
 
@@ -108,6 +120,40 @@ services:
       - "15672:15672"
     networks:
       - micro-network
+      
+  # Vezbe 11
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin-server
+    ports:
+      - "9411:9411"
+    networks:
+      - micro-network
+    # Opciono: kontejner se sam restartuje ako pukne
+    restart: always
+    
+  # --- CENTRALNA BAZA ZA LOGOVE ---
+  loki:
+    image: grafana/loki:2.9.2
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - micro-network
+
+  # --- GRAFIČKI INTERFEJS ZA PRETRAGU LOGOVA I GRAFIKONE ---
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Korisničko ime i šifra će biti admin/admin
+    networks:
+      - micro-network
+    depends_on:
+      - loki
 
 networks:
   micro-network:
